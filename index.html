@@ -139,11 +139,16 @@ const cv = $('c'), ctx = cv.getContext('2d');
 let DPR = 1, CW = 0, CH = 0, SCALE = 1;
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  CW = window.innerWidth; CH = window.innerHeight;
+  /* iOS Safari はツールバーが被るため、実際に見えている領域を基準にする */
+  const vv = window.visualViewport;
+  CW = (vv && vv.width) || window.innerWidth;
+  CH = (vv && vv.height) || window.innerHeight;
   cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
+  cv.style.width = CW + 'px'; cv.style.height = CH + 'px';
   SCALE = Math.min(CW / 540, CH / 760, 1);
 }
 window.addEventListener('resize', resize);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
 resize();
 
 /* ---------- 定数 ---------- */
@@ -327,7 +332,7 @@ function render() {
 
   ctx.save();
   const jx = (Math.random() - 0.5) * shake, jy = (Math.random() - 0.5) * shake;
-  ctx.translate(CW / 2 + jx, CH * 0.74 + jy);
+  ctx.translate(CW / 2 + jx, CH * 0.60 + jy);
   ctx.scale(SCALE * zoom, SCALE * zoom);
 
   for (const b of blocks) drawBox(b.x, b.z, b.w, b.d, b.y * H - camY, hueFor(b.y));
